@@ -67,15 +67,19 @@ const images = [
 ];
 
 const galleryContainer = document.querySelector('.gallery');
+// only the one instance for image modal window
+const imgModalWindow = basicLightbox.create(`<img src="">`);
+// cache the pointer to img element in modal window
+const imgModalElement = imgModalWindow.element().querySelector("img");
 
 function createGalleryItemMarkup({description, preview, original}) {
     return `<li class="gallery-item">
-                <a class="gallery-link" href="large-image.jpg">
+                <a class="gallery-link" href="${original}">
                     <img
                     class="gallery-image"
                     src="${preview}"
                     data-source="${original}"
-                    alt="${description}}"
+                    alt="${description}"
                     width="360"
                     height="200"
                     />
@@ -84,9 +88,10 @@ function createGalleryItemMarkup({description, preview, original}) {
 }
 
 function fillGallery() {
-    images.forEach(img => {
-        galleryContainer.insertAdjacentHTML('beforeend', createGalleryItemMarkup(img));
-    });
+    galleryContainer.insertAdjacentHTML(
+        'beforeend',
+        images.map(img => createGalleryItemMarkup(img)).join("")
+    );
 }
 
 galleryContainer.addEventListener('click', event => {
@@ -94,7 +99,10 @@ galleryContainer.addEventListener('click', event => {
         return;
     }
     event.preventDefault();
-    basicLightbox.create(`<img src="${event.target.dataset.source}">`).show();
+    if (event.target.dataset.source !== imgModalElement.getAttribute("src")) {
+        imgModalElement.setAttribute("src", event.target.dataset.source);
+    }
+    imgModalWindow.show();
 });
 
 fillGallery();
